@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -23,19 +22,19 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
-struct LinkedList<T> {
+struct LinkedList<T: PartialOrd<T>> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: PartialOrd<T> + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: PartialOrd<T> + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,18 +68,37 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+    pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    {
+        let mut marged_list: LinkedList<T> = LinkedList::<T>::new();
+        let mut a_prt = &list_a.start;
+        let mut b_prt = &list_b.start;
+        while a_prt.is_some() && b_prt.is_some() {
+            let a_val = unsafe { &(a_prt.unwrap().as_ref()).val };
+            let b_val = unsafe { &(b_prt.unwrap().as_ref()).val };
+            if a_val <= b_val {
+                marged_list.add(a_val.clone());
+                a_prt = unsafe { &(a_prt.unwrap().as_ref()).next };
+            } else {
+                marged_list.add(b_val.clone());
+                b_prt = unsafe { &(b_prt.unwrap().as_ref()).next };
+            }
         }
-	}
+        while let Some(v) = a_prt {
+            let val = unsafe { &(v.as_ref()).val };
+            marged_list.add(val.clone());
+            a_prt = unsafe { &(v.as_ref()).next };
+        }
+        while let Some(v) = b_prt {
+            let val = unsafe { &(v.as_ref()).val };
+            marged_list.add(val.clone());
+            b_prt = unsafe { &(v.as_ref()).next };
+        }
+        marged_list
+    }
 }
 
-impl<T> Display for LinkedList<T>
+impl<T: PartialOrd<T>> Display for LinkedList<T>
 where
     T: Display,
 {
